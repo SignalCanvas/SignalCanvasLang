@@ -47,6 +47,12 @@ pub struct InstanceLoadOutput {
     pub rx_streams: Vec<StreamOutput>,
     pub is_ring_container: bool,
     pub ring_protocol: Option<String>,
+    /// Instance-body properties with no dedicated field above (e.g. `clock_source`,
+    /// `clock_p_Slot_1_Dante_rate`). `location`/`rf_band`/`rf_active_channels`/
+    /// `iem_modes`/`ring_protocol` are NOT in here — they have dedicated fields, and a
+    /// key lives in exactly one place so a round-trip re-emits the block unchanged.
+    /// BTreeMap, not HashMap: sorted-by-key iteration keeps emit -> load -> emit stable.
+    pub properties: std::collections::BTreeMap<String, String>,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -257,6 +263,10 @@ pub struct NetworkLoadOutput {
     pub protocol: Option<String>,
     pub label: Option<String>,
     pub members: Vec<NetworkMemberLoadOutput>,
+    /// Network-body properties with no dedicated field above (e.g. the PTPv2 `domain`).
+    /// `protocol`/`label` are NOT in here — they have dedicated fields, and a key lives
+    /// in exactly one place. BTreeMap: sorted-by-key keeps emit -> load -> emit stable.
+    pub properties: std::collections::BTreeMap<String, String>,
 }
 
 #[derive(Debug, Serialize, TS)]

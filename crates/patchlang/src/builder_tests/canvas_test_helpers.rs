@@ -1,7 +1,7 @@
 //! Shared builders for canvas emit/roundtrip tests.
 
 use crate::builder::canvas_input::*;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 pub(super) fn make_interface(
     id: &str,
@@ -55,6 +55,7 @@ pub(super) fn make_simple_instance(
         is_ring_container: false,
         ring_protocol: None,
         ring_members: vec![],
+        properties: BTreeMap::new(),
     }
 }
 

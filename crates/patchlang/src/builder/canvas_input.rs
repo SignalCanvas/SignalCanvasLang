@@ -3,7 +3,7 @@
 
 use super::insert_endpoints::InsertEndpoint;
 use serde::Deserialize;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Deserialize, TS)]
@@ -47,6 +47,12 @@ pub struct InstanceEmitInput {
     pub ring_protocol: Option<String>,
     /// For ring container instances: ordered list of member {instance, port} pairs.
     pub ring_members: Vec<RingMemberEmitInput>,
+    /// Arbitrary extra instance-body properties (e.g. clock settings). `#[serde(default)]`
+    /// is REQUIRED: a frontend built before this field sends no `properties` key, and
+    /// without the default serde rejects the whole payload with "missing field". Keys that
+    /// collide with a dedicated field (`location`, `rf_band`, …) are skipped on emit.
+    #[serde(default)]
+    pub properties: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, Deserialize, TS)]

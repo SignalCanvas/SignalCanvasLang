@@ -19,4 +19,12 @@ route_rules: Array<RouteRuleOutput>,
 /**
  * Per-instance route entries (`route A[n] -> B[m]` in instance body) → pd.internalRoutes
  */
-instance_routes: Array<RouteRuleOutput>, internal_buses: Array<BusLoadOutput>, tx_streams: Array<StreamOutput>, rx_streams: Array<StreamOutput>, is_ring_container: boolean, ring_protocol: string | null, };
+instance_routes: Array<RouteRuleOutput>, internal_buses: Array<BusLoadOutput>, tx_streams: Array<StreamOutput>, rx_streams: Array<StreamOutput>, is_ring_container: boolean, ring_protocol: string | null, 
+/**
+ * Instance-body properties with no dedicated field above (e.g. `clock_source`,
+ * `clock_p_Slot_1_Dante_rate`). `location`/`rf_band`/`rf_active_channels`/
+ * `iem_modes`/`ring_protocol` are NOT in here — they have dedicated fields, and a
+ * key lives in exactly one place so a round-trip re-emits the block unchanged.
+ * BTreeMap, not HashMap: sorted-by-key iteration keeps emit -> load -> emit stable.
+ */
+properties: { [key in string]?: string }, };

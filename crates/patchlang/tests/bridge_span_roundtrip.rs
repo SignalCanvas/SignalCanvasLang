@@ -158,6 +158,7 @@ fn rebuild_input_from_load(loaded: &CanvasLoadOutput) -> CanvasEmitInput {
             is_ring_container: inst.is_ring_container,
             ring_protocol: inst.ring_protocol.clone(),
             ring_members: vec![],
+            properties: inst.properties.clone(),
         }
     }).collect();
 

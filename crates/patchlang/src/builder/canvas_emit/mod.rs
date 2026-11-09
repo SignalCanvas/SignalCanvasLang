@@ -12,6 +12,7 @@ use crate::ast::{
     KvValue, RingDecl, RingMember, Statement, TemplateDecl,
 };
 use crate::builder::canvas_input::*;
+use crate::builder::canvas_properties::is_dedicated_instance_key;
 use crate::builder::error::BuilderError;
 use crate::builder::PatchProgramBuilder;
 
@@ -416,6 +417,16 @@ fn build_instance_decl(inst: &InstanceEmitInput, template_name: &str, manufactur
         if !modes.is_empty() {
             properties.push(kv_str("iem_modes", modes));
         }
+    }
+    // Arbitrary extra properties (clock settings, …). `inst.properties` is a BTreeMap,
+    // so this iterates sorted by key — matching the load side and keeping
+    // emit -> load -> emit byte-stable. Skip any key that has a dedicated field above,
+    // or it would be written twice (the dedicated field always wins).
+    for (key, value) in &inst.properties {
+        if is_dedicated_instance_key(key) {
+            continue;
+        }
+        properties.push(kv_str(key, value));
     }
 
     let routes = build_instance_routes(

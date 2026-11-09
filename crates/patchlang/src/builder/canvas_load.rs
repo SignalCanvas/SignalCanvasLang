@@ -11,6 +11,7 @@ use crate::ast::{
     IndexElement, KvValue, NetworkMember, PortDirection, PortRef, Statement,
 };
 use crate::builder::canvas_output::*;
+use crate::builder::canvas_properties::{leftover_instance_props, leftover_network_props};
 use crate::builder::error::BuilderError;
 use crate::builder::insert_endpoints::{parse_insert_list, InsertEndpoint};
 use crate::parser::parse;
@@ -89,6 +90,7 @@ pub fn load_from_patch(patch_source: &str, _layout_json: &str) -> Result<CanvasL
                     label: n.properties.iter().find(|kv| kv.key == "label").and_then(|kv| {
                         if let KvValue::Str { value } = &kv.value { Some(value.clone()) } else { None }
                     }),
+                    properties: leftover_network_props(&kv_map(&n.properties)),
                     members: n.members.iter().map(|m| match m {
                         NetworkMember::DeviceLevel { instance, .. } => NetworkMemberLoadOutput {
                             member_type: "device_level".to_string(),
@@ -481,6 +483,7 @@ pub fn load_from_patch(patch_source: &str, _layout_json: &str) -> Result<CanvasL
             rx_streams,
             is_ring_container,
             ring_protocol: props.get("ring_protocol").cloned(),
+            properties: leftover_instance_props(&props),
         });
     }
 

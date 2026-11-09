@@ -15,7 +15,7 @@ use patchlang::builder::{emit_from_canvas_input, load_from_patch};
 use patchlang::builder::canvas_input::*;
 use patchlang::builder::canvas_output::CanvasLoadOutput;
 use proptest::prelude::*;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 // ---------------------------------------------------------------------------
 // Builders — construct valid CanvasEmitInput from a seed integer
@@ -87,6 +87,7 @@ fn make_instance(i: usize) -> InstanceEmitInput {
         is_ring_container: false,
         ring_protocol: None,
         ring_members: vec![],
+        properties: BTreeMap::new(),
     }
 }
 
@@ -262,6 +263,7 @@ fn rebuild_input_from_load(loaded: &CanvasLoadOutput) -> CanvasEmitInput {
             // Rings in CanvasLoadOutput are top-level, not per-instance.
             // Ring member reconstruction is deferred until the emit model aligns.
             ring_members: vec![],
+            properties: inst.properties.clone(),
         }
     }).collect();
 

@@ -1,6 +1,6 @@
 //! Shared builders for canvas-load tests.
 use crate::builder::canvas_input::*;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 pub(super) fn make_iface(id: &str, label: &str, dir: &str, ch: u32) -> InterfaceEmitInput {
     InterfaceEmitInput {
@@ -42,6 +42,7 @@ pub(super) fn make_inst(name: &str, model: &str, ifaces: Vec<InterfaceEmitInput>
         is_ring_container: false,
         ring_protocol: None,
         ring_members: vec![],
+        properties: BTreeMap::new(),
     }
 }
 

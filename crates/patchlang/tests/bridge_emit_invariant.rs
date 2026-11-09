@@ -13,7 +13,7 @@
 
 use patchlang::builder::canvas_input::*;
 use patchlang::builder::emit_from_canvas_input;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 fn iface(id: &str, label: &str, dir: &str, channel_count: u32) -> InterfaceEmitInput {
     InterfaceEmitInput {
@@ -57,6 +57,7 @@ fn instance_with(interfaces: Vec<InterfaceEmitInput>, rules: Vec<RouteRuleEmitIn
         is_ring_container: false,
         ring_protocol: None,
         ring_members: vec![],
+        properties: BTreeMap::new(),
     }
 }
 

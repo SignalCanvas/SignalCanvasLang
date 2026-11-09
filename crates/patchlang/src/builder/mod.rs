@@ -8,6 +8,7 @@ pub mod canvas_emit;
 pub mod canvas_input;
 pub mod canvas_load;
 pub mod canvas_output;
+pub(crate) mod canvas_properties;
 pub mod error;
 pub mod insert_endpoints;
 mod config;

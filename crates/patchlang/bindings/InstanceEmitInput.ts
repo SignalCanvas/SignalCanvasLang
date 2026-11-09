@@ -24,4 +24,11 @@ instance_routes: Array<RouteRuleEmitInput>, internal_buses: Array<BusEmitInput>,
 /**
  * For ring container instances: ordered list of member {instance, port} pairs.
  */
-ring_members: Array<RingMemberEmitInput>, };
+ring_members: Array<RingMemberEmitInput>, 
+/**
+ * Arbitrary extra instance-body properties (e.g. clock settings). `#[serde(default)]`
+ * is REQUIRED: a frontend built before this field sends no `properties` key, and
+ * without the default serde rejects the whole payload with "missing field". Keys that
+ * collide with a dedicated field (`location`, `rf_band`, …) are skipped on emit.
+ */
+properties: { [key in string]?: string }, };
