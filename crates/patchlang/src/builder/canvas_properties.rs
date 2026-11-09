@@ -50,3 +50,44 @@ fn leftover(props: &HashMap<String, String>, dedicated: &[&str]) -> BTreeMap<Str
         .map(|(k, v)| (k.clone(), v.clone()))
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn map(pairs: &[(&str, &str)]) -> HashMap<String, String> {
+        pairs.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect()
+    }
+
+    #[test]
+    fn instance_leftover_excludes_every_dedicated_key() {
+        let props = map(&[
+            ("location", "a"), ("rf_band", "b"), ("rf_active_channels", "c"),
+            ("iem_modes", "d"), ("ring_protocol", "e"), ("clock_rate", "96k"),
+        ]);
+        let left = leftover_instance_props(&props);
+        assert_eq!(left.keys().collect::<Vec<_>>(), ["clock_rate"]);
+    }
+
+    #[test]
+    fn network_leftover_excludes_protocol_and_label() {
+        let props = map(&[("protocol", "x"), ("label", "y"), ("domain", "0")]);
+        assert_eq!(leftover_network_props(&props).keys().collect::<Vec<_>>(), ["domain"]);
+    }
+
+    #[test]
+    fn leftover_is_sorted_by_key() {
+        let props = map(&[("zeta", "1"), ("alpha", "2"), ("mid", "3")]);
+        let keys: Vec<_> = leftover_instance_props(&props).into_keys().collect();
+        assert_eq!(keys, ["alpha", "mid", "zeta"]);
+    }
+
+    #[test]
+    fn dedicated_predicate_matches_the_leftover_filter() {
+        for key in ["location", "rf_band", "rf_active_channels", "iem_modes", "ring_protocol"] {
+            assert!(is_dedicated_instance_key(key), "{key}");
+            assert!(leftover_instance_props(&map(&[(key, "v")])).is_empty(), "{key}");
+        }
+        assert!(!is_dedicated_instance_key("clock_rate"));
+    }
+}
