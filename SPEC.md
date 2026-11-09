@@ -513,6 +513,31 @@ property-value = string-literal | number | port-ref ;
 
 Keywords can be used as property keys. Values can be strings, numbers, or port references.
 
+#### Arbitrary properties
+
+`instance`, `network` and `ring` bodies accept any `key: "value"` pair. For instances and networks the canvas load/emit API keeps keys it does not recognise, so tools can store their own settings in the `.patch` file and get them back after a save and reload. Ring properties parse, but the load/emit API does not carry them yet.
+
+```
+instance FOH_Engine is dLIVE_DM0 {
+  clock_source: "internal"
+  clock_p_Slot_1_Dante_rate: "96k"
+  clock_p_Slot_1_Dante_role: "follower"
+}
+
+network PTPv2_Domain_0 {
+  protocol: "PTPv2"
+  domain: "0"
+}
+```
+
+- **Opaque.** Neither the compiler nor the load/emit API checks keys or values, and neither cares what they mean. A tool that wants validation (for example, clock checks) does it itself.
+- **Strings only.** On load, `domain: 0` and `domain: "0"` both come back as the string `"0"`. Emit writes values quoted.
+- **Sorted.** Load returns properties sorted by key, and emit writes them sorted by key, so load, emit, load gives identical output. Authored order is not preserved.
+- **One home per key.** Keys that have their own field are not repeated in the `properties` map. For instances those are `location`, `rf_band`, `rf_active_channels`, `iem_modes` and `ring_protocol`. For networks they are `protocol` and `label`. On emit, a `properties` entry with one of these keys is skipped, so the dedicated field wins.
+- **Keyword keys.** Keys that are PatchLang keywords outside the property-key list above (for example `in`, `out`, `slot`) are dropped by the parser. Use a prefix such as `clock_`.
+- **Existing meaning.** Some keys already drive design rule checks, notably `aes67_mode` and `multicast_prefix`. Do not reuse those names for other purposes.
+- **Where it is exposed.** `InstanceLoadOutput.properties` and `NetworkLoadOutput.properties` on load, and `InstanceEmitInput.properties` on emit (optional, defaults to empty). Ring and network emit are not part of this API. Network blocks are written by the caller.
+
 ---
 
 ## 5. Complete Example

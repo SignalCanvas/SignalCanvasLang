@@ -302,6 +302,8 @@ instance-body = "{" { instance-entry } "}" ;
 instance-entry = route-entry | bus-entry | slot-assignment | key-value-pair ;
 ```
 
+Any `key: "value"` pair is allowed in the body and is preserved through load and emit; see [Arbitrary properties](#arbitrary-properties).
+
 ```
 instance Stage_Left is Rio3224 {
   location: "Stage Left Wing"
@@ -616,7 +618,7 @@ port-group-ref = identifier                               # device-level
                | identifier "." "slot" "[" index "]" ;   # card in slot
 ```
 
-**Key-value pairs:** `protocol` (required: `"Dante"`, `"SoundGrid"`, `"AVB"`, `"Milan"`, `"AES67"`), `label`, `vlan`.
+**Key-value pairs:** `protocol` (required: `"Dante"`, `"SoundGrid"`, `"AVB"`, `"Milan"`, `"AES67"`), `label`, `vlan`. Any other key is kept as an opaque string property (see [Arbitrary properties](#arbitrary-properties)).
 
 **Semantics:**
 - Port-group level: `FOH.Dante_Pri` covers both `Dante_Pri_In` and `Dante_Pri_Out`
@@ -885,6 +887,31 @@ property-value = string-literal | number | port-ref ;
 ```
 
 Keywords can be used as property keys. Values can be strings, numbers, or port references.
+
+#### Arbitrary properties
+
+`instance`, `network` and `ring` bodies accept any `key: "value"` pair. For instances and networks the canvas load/emit API keeps keys it does not recognise, so tools can store their own settings in the `.patch` file and get them back after a save and reload. Ring properties parse, but the load/emit API does not carry them yet.
+
+```
+instance FOH_Engine is dLIVE_DM0 {
+  clock_source: "internal"
+  clock_p_Slot_1_Dante_rate: "96k"
+  clock_p_Slot_1_Dante_role: "follower"
+}
+
+network PTPv2_Domain_0 {
+  protocol: "PTPv2"
+  domain: "0"
+}
+```
+
+- **Opaque.** Neither the compiler nor the load/emit API checks keys or values, and neither cares what they mean. A tool that wants validation (for example, clock checks) does it itself.
+- **Strings only.** On load, `domain: 0` and `domain: "0"` both come back as the string `"0"`. Emit writes values quoted.
+- **Sorted.** Load returns properties sorted by key, and emit writes them sorted by key, so load, emit, load gives identical output. Authored order is not preserved.
+- **One home per key.** Keys that have their own field are not repeated in the `properties` map. For instances those are `location`, `rf_band`, `rf_active_channels`, `iem_modes` and `ring_protocol`. For networks they are `protocol` and `label`. On emit, a `properties` entry with one of these keys is skipped, so the dedicated field wins.
+- **Keyword keys.** Keys that are PatchLang keywords outside the property-key list above (for example `in`, `out`, `slot`) are dropped by the parser. Use a prefix such as `clock_`.
+- **Existing meaning.** Some keys already drive design rule checks, notably `aes67_mode` and `multicast_prefix`. Do not reuse those names for other purposes.
+- **Where it is exposed.** `InstanceLoadOutput.properties` and `NetworkLoadOutput.properties` on load, and `InstanceEmitInput.properties` on emit (optional, defaults to empty). Ring and network emit are not part of this API. Network blocks are written by the caller.
 
 ---
 
